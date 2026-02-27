@@ -31,16 +31,20 @@ class FreshnessResponse(BaseModel):
     last_modified_at: str | None = None
     latency_hours: float | None = None
     current_version: int | None = None
+    partition_count: int | None = None
     last_documented_at: str | None = None
 
 
 class QualityColumn(BaseModel):
     """Quality metrics for a single column in a table."""
     column_name: str
-    data_type: str | None = None
+    data_format: str | None = None
+    null_count: int | None = None
     null_percentage: float | None = None
     distinct_count: int | None = None
+    zero_count: int | None = None
     total_rows: int | None = None
+    fingerprint: str | None = None
 
 
 class QualityNotFound(BaseModel):
@@ -49,9 +53,12 @@ class QualityNotFound(BaseModel):
 
 
 class ProfileColumn(BaseModel):
-    """Statistical profile for a single numeric column."""
+    """Statistical profile for a single column."""
     column_name: str
     data_type: str | None = None
+    row_count: int | None = None
+    file_size_bytes: int | None = None
+    distinct_count: int | None = None
     mean: float | None = None
     min_val: float | None = None
     p25: float | None = None
@@ -148,7 +155,7 @@ def get_freshness(
     target_table = get_target_table("freshness")
 
     query = f"""
-        SELECT last_modified_at, latency_hours, current_version, last_documented_at
+        SELECT last_modified_at, latency_hours, current_version, partition_count, last_documented_at
         FROM {target_table}
         WHERE catalog_name = '{catalog}' AND schema_name = '{schema}' AND table_name = '{table}'
     """
@@ -179,7 +186,7 @@ def get_quality(
     target_table = get_target_table("quality")
 
     query = f"""
-        SELECT column_name, data_type, null_percentage, distinct_count, total_rows
+        SELECT column_name, data_format, null_count, null_percentage, distinct_count, zero_count, total_rows, fingerprint
         FROM {target_table}
         WHERE catalog_name = '{catalog}' AND schema_name = '{schema}' AND table_name = '{table}'
     """
@@ -207,7 +214,7 @@ def get_profile(
     target_table = get_target_table("profile")
 
     query = f"""
-        SELECT column_name, data_type, mean, min_val, p25, median, p75, max_val
+        SELECT column_name, data_type, row_count, file_size_bytes, distinct_count, mean, min_val, p25, median, p75, max_val
         FROM {target_table}
         WHERE catalog_name = '{catalog}' AND schema_name = '{schema}' AND table_name = '{table}'
     """
