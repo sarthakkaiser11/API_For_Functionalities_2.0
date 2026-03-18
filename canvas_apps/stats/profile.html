@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Dashboard | Data Observability</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface-2: #1a1a26;
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.12);
+            --text: #ffffff;
+            --text-dim: #6b7280;
+            --text-muted: #4b5563;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --green: #10b981;
+            --green-glow: rgba(16, 185, 129, 0.15);
+            --amber: #f59e0b;
+            --amber-glow: rgba(245, 158, 11, 0.15);
+            --red: #ef4444;
+            --red-glow: rgba(239, 68, 68, 0.15);
+            --purple: #8b5cf6;
+            --cyan: #06b6d4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ─── Top Navigation ─── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 2rem;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.1rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .breadcrumb a {
+            color: var(--text-dim);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--text);
+        }
+
+        .breadcrumb .current {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .search-container input {
+            width: 320px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.55rem 1rem;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .search-container button {
+            background: var(--accent);
+            border: none;
+            border-radius: 10px;
+            padding: 0.55rem 1.2rem;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .search-container button:hover {
+            opacity: 0.85;
+        }
+
+        /* ─── Main Layout ─── */
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.25rem;
+        }
+
+        .page-header .subtitle {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .table-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.4rem 0.8rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+
+        .table-tag .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* ─── Summary Bar ─── */
+        .summary-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-chip {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+
+        .summary-chip .chip-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+        }
+
+        .summary-chip .chip-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        /* ─── Column Selector ─── */
+        .column-selector-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .column-selector-area label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .custom-select-wrapper {
+            position: relative;
+            min-width: 280px;
+        }
+
+        .custom-select {
+            width: 100%;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.7rem 2.5rem 0.7rem 1rem;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .custom-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .custom-select-wrapper::after {
+            content: '▾';
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            pointer-events: none;
+        }
+
+        .column-count-badge {
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* ─── Column Detail Dashboard ─── */
+        .column-dashboard {
+            display: none;
+        }
+
+        .type-banner {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            padding: 0.6rem 1.25rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .type-banner strong {
+            color: var(--purple);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .kpi-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+
+        .kpi-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+
+        .kpi-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        /* ─── Bottom Panels ─── */
+        .panels-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .panel-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ─── Quantile Visualization ─── */
+        .quantile-viz {
+            padding: 1rem 0;
+        }
+
+        .quantile-track-container {
+            position: relative;
+            margin: 2rem 0 1rem;
+            padding: 0 10px;
+        }
+
+        .quantile-track {
+            height: 8px;
+            background: var(--surface-2);
+            border-radius: 4px;
+            position: relative;
+            overflow: visible;
+        }
+
+        .quantile-range {
+            position: absolute;
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(to right, var(--accent), var(--purple));
+            transition: left 0.8s, width 0.8s;
+        }
+
+        .quantile-marker {
+            position: absolute;
+            top: -8px;
+            width: 3px;
+            height: 24px;
+            border-radius: 2px;
+            transition: left 0.8s;
+        }
+
+        .quantile-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+        }
+
+        .q-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .q-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 4px;
+        }
+
+        /* ─── Metrics List ─── */
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-row .label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metric-row .value {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .metric-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ─── Loader / Error ─── */
+        .loader-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--surface-2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-msg {
+            color: var(--red);
+            background: var(--red-glow);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        @media (max-width: 1024px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .panels-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                padding: 0.75rem 1rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .dashboard {
+                padding: 1rem;
+            }
+
+            .search-container input {
+                width: 160px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="topbar">
+        <div class="topbar-left">
+            <span class="logo">DataObs</span>
+            <div class="nav-divider"></div>
+            <div class="breadcrumb">
+                <a href="/">Hub</a><span>›</span><span class="current">Profile</span>
+            </div>
+        </div>
+        <div class="search-container">
+            <input type="text" id="tablePath" placeholder="catalog.schema.table">
+            <button onclick="navigate()">Go</button>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+
+        <div id="loader" class="loader-area">
+            <div class="spinner"></div>
+        </div>
+
+        <div id="content" style="display: none;">
+
+            <div class="page-header">
+                <h1>Data Profile</h1>
+                <p class="subtitle">Statistical distributions and quantile analysis</p>
+                <div class="table-tag">
+                    <span class="dot"></span>
+                    <span id="tableNameDisplay">—</span>
+                </div>
+            </div>
+
+            <!-- Summary Bar -->
+            <div class="summary-bar">
+                <div class="summary-chip">
+                    <div class="chip-label">Total Columns</div>
+                    <div class="chip-value" id="totalCols" style="color: var(--accent);">0</div>
+                </div>
+                <div class="summary-chip">
+                    <div class="chip-label">Row Count</div>
+                    <div class="chip-value" id="rowCount" style="color: var(--green);">0</div>
+                </div>
+                <div class="summary-chip">
+                    <div class="chip-label">File Size</div>
+                    <div class="chip-value" id="fileSize" style="color: var(--purple); font-size: 1.1rem;">0 B</div>
+                </div>
+            </div>
+
+            <!-- Column Selector -->
+            <div class="column-selector-area">
+                <label>Select Column</label>
+                <div class="custom-select-wrapper">
+                    <select class="custom-select" id="columnSelect" onchange="showColumnDetail()">
+                        <option value="">— Choose a column —</option>
+                    </select>
+                </div>
+                <span class="column-count-badge" id="colCountBadge">0 columns</span>
+            </div>
+
+            <!-- Column Detail Dashboard -->
+            <div class="column-dashboard" id="columnDashboard">
+
+                <div class="type-banner" id="typeBanner">
+                    📊 <span>Column: <strong id="bannerName">—</strong></span>
+                    <span style="color: var(--text-muted);">|</span>
+                    <span>Type: <strong id="bannerType">—</strong></span>
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Mean</span>
+                            <div class="kpi-icon" style="background: var(--accent-glow); color: var(--accent);">μ</div>
+                        </div>
+                        <div class="kpi-value" id="kpiMean" style="color: var(--accent);">—</div>
+                        <div class="kpi-sub">average value</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Median</span>
+                            <div class="kpi-icon" style="background: var(--green-glow); color: var(--green);">M̃</div>
+                        </div>
+                        <div class="kpi-value" id="kpiMedian" style="color: var(--green);">—</div>
+                        <div class="kpi-sub">middle value (p50)</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Distinct</span>
+                            <div class="kpi-icon" style="background: rgba(139, 92, 246, 0.15); color: var(--purple);">🔢
+                            </div>
+                        </div>
+                        <div class="kpi-value" id="kpiDistinct" style="color: var(--purple);">—</div>
+                        <div class="kpi-sub">unique values</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Row Count</span>
+                            <div class="kpi-icon" style="background: var(--amber-glow); color: var(--amber);">📋</div>
+                        </div>
+                        <div class="kpi-value" id="kpiRows" style="color: var(--amber);">—</div>
+                        <div class="kpi-sub">total rows</div>
+                    </div>
+                </div>
+
+                <div class="panels-grid">
+
+                    <!-- Quantile Chart -->
+                    <div class="panel">
+                        <div class="panel-title">📊 Distribution (Quantiles)</div>
+                        <div class="quantile-viz">
+                            <div class="quantile-track-container">
+                                <div class="quantile-track">
+                                    <div class="quantile-range" id="qRange"></div>
+                                    <div class="quantile-marker" id="qMinMarker" style="background: var(--cyan);"></div>
+                                    <div class="quantile-marker" id="qP25Marker" style="background: var(--accent);">
+                                    </div>
+                                    <div class="quantile-marker" id="qP75Marker" style="background: var(--accent);">
+                                    </div>
+                                    <div class="quantile-marker" id="qMaxMarker" style="background: var(--cyan);"></div>
+                                </div>
+                            </div>
+                            <div class="quantile-labels">
+                                <div class="q-label">
+                                    <span>Min</span>
+                                    <span class="q-value" id="qMin">—</span>
+                                </div>
+                                <div class="q-label">
+                                    <span>P25</span>
+                                    <span class="q-value" id="qP25">—</span>
+                                </div>
+                                <div class="q-label">
+                                    <span>Median</span>
+                                    <span class="q-value" id="qMedian" style="color: var(--green);">—</span>
+                                </div>
+                                <div class="q-label">
+                                    <span>P75</span>
+                                    <span class="q-value" id="qP75">—</span>
+                                </div>
+                                <div class="q-label">
+                                    <span>Max</span>
+                                    <span class="q-value" id="qMax">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="panel">
+                        <div class="panel-title">📋 Column Details</div>
+
+                        <div class="metric-row">
+                            <span class="label"><span class="metric-dot" style="background: var(--accent);"></span>
+                                Column Name</span>
+                            <span class="value" id="detColName">—</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="label"><span class="metric-dot" style="background: var(--purple);"></span> Data
+                                Type</span>
+                            <span class="value" id="detDataType">—</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="label"><span class="metric-dot" style="background: var(--cyan);"></span> Min
+                                Value</span>
+                            <span class="value" id="detMin">—</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="label"><span class="metric-dot" style="background: var(--green);"></span> Max
+                                Value</span>
+                            <span class="value" id="detMax">—</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="label"><span class="metric-dot" style="background: var(--amber);"></span> File
+                                Size</span>
+                            <span class="value" id="detFileSize">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="errorArea" class="error-msg" style="display: none;"></div>
+    </main>
+
+    <script>
+        const API_BASE = "https://poc-lineage-backend.vercel.app";
+        let allProfiles = [];
+
+        function getTablePathFromURL() {
+            const prefix = "/stats/profile/";
+            const path = window.location.pathname;
+            if (path.startsWith(prefix) && path.length > prefix.length) {
+                return decodeURIComponent(path.substring(prefix.length));
+            }
+            return null;
+        }
+
+        function navigate() {
+            const path = document.getElementById('tablePath').value;
+            if (path) window.location.href = `/stats/profile/${path}`;
+        }
+
+        document.getElementById('tablePath').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') navigate();
+        });
+
+        function formatBytes(bytes) {
+            if (!bytes) return '0 B';
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+        }
+
+        function fmt(v) { return v != null ? Number(v).toFixed(2) : '—'; }
+
+        async function fetchProfile(tablePath) {
+            const loader = document.getElementById('loader');
+            const content = document.getElementById('content');
+            const errorArea = document.getElementById('errorArea');
+
+            document.getElementById('tablePath').value = tablePath;
+
+            loader.style.display = 'flex';
+            content.style.display = 'none';
+            errorArea.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/stats/profile/${tablePath}`);
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.detail || `HTTP ${response.status}`);
+                }
+
+                allProfiles = await response.json();
+                renderOverview(tablePath);
+
+                loader.style.display = 'none';
+                content.style.display = 'block';
+            } catch (err) {
+                loader.style.display = 'none';
+                errorArea.textContent = err.message;
+                errorArea.style.display = 'block';
+            }
+        }
+
+        function renderOverview(tablePath) {
+            document.getElementById('tableNameDisplay').textContent = tablePath;
+
+            const first = allProfiles[0];
+            document.getElementById('totalCols').textContent = allProfiles.length;
+            document.getElementById('rowCount').textContent = (first?.row_count || 0).toLocaleString();
+            document.getElementById('fileSize').textContent = formatBytes(first?.file_size_bytes);
+            document.getElementById('colCountBadge').textContent = `${allProfiles.length} columns`;
+
+            // Populate dropdown
+            const select = document.getElementById('columnSelect');
+            select.innerHTML = '<option value="">— Choose a column —</option>';
+            allProfiles.forEach((p, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                const typeIcon = (p.data_type || '').includes('double') || (p.data_type || '').includes('int') || (p.data_type || '').includes('bigint') ? '🔢' : '📝';
+                opt.textContent = `${typeIcon} ${p.column_name} (${p.data_type || 'unknown'})`;
+                select.appendChild(opt);
+            });
+
+            // Auto-select first column
+            if (allProfiles.length > 0) {
+                select.value = '0';
+                showColumnDetail();
+            }
+        }
+
+        function showColumnDetail() {
+            const idx = document.getElementById('columnSelect').value;
+            const dashboard = document.getElementById('columnDashboard');
+
+            if (idx === '') {
+                dashboard.style.display = 'none';
+                return;
+            }
+
+            const p = allProfiles[parseInt(idx)];
+            dashboard.style.display = 'block';
+
+            // Banner
+            document.getElementById('bannerName').textContent = p.column_name;
+            document.getElementById('bannerType').textContent = (p.data_type || 'unknown').toUpperCase();
+
+            // KPIs
+            document.getElementById('kpiMean').textContent = fmt(p.mean);
+            document.getElementById('kpiMedian').textContent = fmt(p.median);
+            document.getElementById('kpiDistinct').textContent = (p.distinct_count || 0).toLocaleString();
+            document.getElementById('kpiRows').textContent = (p.row_count || 0).toLocaleString();
+
+            // Details panel
+            document.getElementById('detColName').textContent = p.column_name;
+            document.getElementById('detDataType').textContent = (p.data_type || '—').toUpperCase();
+            document.getElementById('detMin').textContent = fmt(p.min_val);
+            document.getElementById('detMax').textContent = fmt(p.max_val);
+            document.getElementById('detFileSize').textContent = formatBytes(p.file_size_bytes);
+
+            // Quantile labels
+            document.getElementById('qMin').textContent = fmt(p.min_val);
+            document.getElementById('qP25').textContent = fmt(p.p25);
+            document.getElementById('qMedian').textContent = fmt(p.median);
+            document.getElementById('qP75').textContent = fmt(p.p75);
+            document.getElementById('qMax').textContent = fmt(p.max_val);
+
+            // Quantile visualization
+            renderQuantileViz(p);
+        }
+
+        function renderQuantileViz(p) {
+            const min = p.min_val != null ? Number(p.min_val) : 0;
+            const max = p.max_val != null ? Number(p.max_val) : 100;
+            const p25 = p.p25 != null ? Number(p.p25) : min;
+            const p75 = p.p75 != null ? Number(p.p75) : max;
+
+            const range = max - min || 1;
+            const toPercent = (v) => ((v - min) / range) * 100;
+
+            const p25Pct = toPercent(p25);
+            const p75Pct = toPercent(p75);
+
+            document.getElementById('qRange').style.left = p25Pct + '%';
+            document.getElementById('qRange').style.width = (p75Pct - p25Pct) + '%';
+
+            document.getElementById('qMinMarker').style.left = '0%';
+            document.getElementById('qP25Marker').style.left = p25Pct + '%';
+            document.getElementById('qP75Marker').style.left = p75Pct + '%';
+            document.getElementById('qMaxMarker').style.left = '100%';
+        }
+
+        // ── Auto-fetch on load ──
+        const tablePath = getTablePathFromURL();
+        if (tablePath) {
+            fetchProfile(tablePath);
+        } else {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

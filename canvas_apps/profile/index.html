@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Canvas | Data Observability</title>
+    <link rel="stylesheet" href="../shared/design-system.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .stats-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .distribution-block {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 1.5rem;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .quantile-container {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            padding: 0 10px;
+        }
+
+        .quantile-point {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .quantile-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            margin-bottom: 5px;
+            box-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        .search-area {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.8rem 1.2rem;
+            color: white;
+            font-family: inherit;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            border-radius: 12px;
+            padding: 0.8rem 2rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="glass-card">
+            <header>
+                <h1>Profile Canvas</h1>
+                <p style="color: var(--text-secondary)">Explore statistical distributions and quantile analysis for
+                    numeric features.</p>
+            </header>
+
+            <div class="search-area">
+                <input type="text" id="tablePath" placeholder="catalog.schema.table"
+                    value="intelliegencedatacatalog.functionalities.sample_table">
+                <button onclick="fetchProfile()">Generate Profile</button>
+            </div>
+
+            <div id="loader" style="display: none; text-align: center; padding: 2rem;">
+                <span class="loader"></span>
+            </div>
+
+            <div id="statsDetail" class="stats-detail-grid">
+                <!-- Data will be injected here -->
+            </div>
+
+            <div id="errorArea" class="error-msg" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://127.0.0.1:8000";
+
+        async function fetchProfile() {
+            const path = document.getElementById('tablePath').value;
+            const loader = document.getElementById('loader');
+            const grid = document.getElementById('statsDetail');
+            const errorArea = document.getElementById('errorArea');
+
+            if (!path) return;
+
+            loader.style.display = 'block';
+            grid.innerHTML = '';
+            errorArea.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/stats/profile/${path}`);
+                if (!response.ok) throw new Error("Could not fetch profile data.");
+
+                const profiles = await response.json();
+                renderProfiles(profiles);
+
+                loader.style.display = 'none';
+            } catch (err) {
+                loader.style.display = 'none';
+                errorArea.textContent = err.message;
+                errorArea.style.display = 'block';
+            }
+        }
+
+        function renderProfiles(profiles) {
+            const grid = document.getElementById('statsDetail');
+            grid.innerHTML = profiles.map(p => `
+                <div class="distribution-block">
+                    <div style="margin-bottom: 1.5rem;">
+                        <span class="badge" style="background: rgba(157, 80, 187, 0.1); color: var(--accent-secondary)">${p.data_type || 'NUMERIC'}</span>
+                        <h3 style="margin: 0.5rem 0 0 0; font-size: 1.25rem;">${p.column_name}</h3>
+                    </div>
+
+                    <div class="stat-row">
+                        <span style="color: var(--text-secondary)">Mean</span>
+                        <span style="font-weight: 700; color: var(--accent-primary)">${p.mean?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span style="color: var(--text-secondary)">Median</span>
+                        <span style="font-weight: 700;">${p.median?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span style="color: var(--text-secondary)">Row Count</span>
+                        <span style="font-weight: 700; opacity: 0.8">${p.row_count || 0}</span>
+                    </div>
+
+                    <div class="quantile-container">
+                        <div class="quantile-point">
+                            <div class="quantile-dot"></div>
+                            <span>Min</span>
+                            <strong style="color: white; margin-top: 2px;">${p.min_val || 0}</strong>
+                        </div>
+                        <div class="quantile-point">
+                            <div class="quantile-dot" style="opacity: 0.6"></div>
+                            <span>P25</span>
+                            <strong style="color: white; margin-top: 2px;">${p.p25 || 0}</strong>
+                        </div>
+                        <div class="quantile-point">
+                            <div class="quantile-dot" style="opacity: 0.6"></div>
+                            <span>P75</span>
+                            <strong style="color: white; margin-top: 2px;">${p.p75 || 0}</strong>
+                        </div>
+                        <div class="quantile-point">
+                            <div class="quantile-dot"></div>
+                            <span>Max</span>
+                            <strong style="color: white; margin-top: 2px;">${p.max_val || 0}</strong>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+
+</html>

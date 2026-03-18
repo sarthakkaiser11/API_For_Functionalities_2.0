@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freshness Canvas | Data Observability</title>
+    <link rel="stylesheet" href="../shared/design-system.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .freshness-pulse {
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, var(--accent-primary) 0%, transparent 70%);
+            border-radius: 50%;
+            margin: 2rem auto;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(0.95);
+                opacity: 0.5;
+            }
+        }
+
+        .metric-card {
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .latency-high {
+            border-left-color: var(--danger);
+        }
+
+        .latency-medium {
+            border-left-color: var(--warning);
+        }
+
+        .latency-low {
+            border-left-color: var(--success);
+        }
+
+        .search-area {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.8rem 1.2rem;
+            color: white;
+            font-family: inherit;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            border-radius: 12px;
+            padding: 0.8rem 2rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="glass-card">
+            <header>
+                <h1>Freshness Canvas</h1>
+                <p style="color: var(--text-secondary)">Monitor data latency and synchronization status across your
+                    Databricks estate.</p>
+            </header>
+
+            <div class="search-area">
+                <input type="text" id="tablePath" placeholder="catalog.schema.table"
+                    value="intelliegencedatacatalog.functionalities.sample_table">
+                <button onclick="fetchFreshness()">Analyze</button>
+            </div>
+
+            <div id="loader" style="display: none; text-align: center; padding: 2rem;">
+                <span class="loader"></span>
+            </div>
+
+            <div id="content" style="display: none;">
+                <div class="freshness-pulse" id="pulseIndicator"></div>
+
+                <div class="stats-grid">
+                    <div class="stat-item metric-card" id="latencyCard">
+                        <div class="stat-label">Latency</div>
+                        <div class="stat-value" id="latencyVal">--</div>
+                        <div style="font-size: 0.8rem; margin-top: 5px;">HOURS BEHIND</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Last Modified</div>
+                        <div class="stat-value" id="lastModifiedVal" style="font-size: 1.1rem;">--</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Version</div>
+                        <div class="stat-value" id="versionVal">--</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Partitions</div>
+                        <div class="stat-value" id="partitionVal">--</div>
+                    </div>
+                </div>
+
+                <div id="errorArea" class="error-msg" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://127.0.0.1:8000";
+
+        async function fetchFreshness() {
+            const path = document.getElementById('tablePath').value;
+            const loader = document.getElementById('loader');
+            const content = document.getElementById('content');
+            const errorArea = document.getElementById('errorArea');
+
+            if (!path) return;
+
+            loader.style.display = 'block';
+            content.style.display = 'none';
+            errorArea.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/stats/freshness/${path}`);
+                if (!response.ok) throw new Error("Could not fetch freshness data.");
+
+                const data = await response.json();
+                renderData(data);
+
+                loader.style.display = 'none';
+                content.style.display = 'block';
+            } catch (err) {
+                loader.style.display = 'none';
+                content.style.display = 'block';
+                errorArea.textContent = err.message;
+                errorArea.style.display = 'block';
+            }
+        }
+
+        function renderData(data) {
+            document.getElementById('latencyVal').textContent = data.latency_hours?.toFixed(2) || '0.00';
+            document.getElementById('lastModifiedVal').textContent = data.last_modified_at || 'Never';
+            document.getElementById('versionVal').textContent = data.current_version || 'v1';
+            document.getElementById('partitionVal').textContent = data.partition_count || '0';
+
+            const latencyCard = document.getElementById('latencyCard');
+            const pulse = document.getElementById('pulseIndicator');
+
+            latencyCard.className = 'stat-item metric-card';
+            if (data.latency_hours > 24) {
+                latencyCard.classList.add('latency-high');
+                pulse.style.background = 'radial-gradient(circle, var(--danger) 0%, transparent 70%)';
+            } else if (data.latency_hours > 4) {
+                latencyCard.classList.add('latency-medium');
+                pulse.style.background = 'radial-gradient(circle, var(--warning) 0%, transparent 70%)';
+            } else {
+                latencyCard.classList.add('latency-low');
+                pulse.style.background = 'radial-gradient(circle, var(--success) 0%, transparent 70%)';
+            }
+        }
+
+        // Initial fetch
+        // fetchFreshness(); 
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quality Dashboard | Data Observability</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface-2: #1a1a26;
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.12);
+            --text: #ffffff;
+            --text-dim: #6b7280;
+            --text-muted: #4b5563;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --green: #10b981;
+            --green-glow: rgba(16, 185, 129, 0.15);
+            --amber: #f59e0b;
+            --amber-glow: rgba(245, 158, 11, 0.15);
+            --red: #ef4444;
+            --red-glow: rgba(239, 68, 68, 0.15);
+            --purple: #8b5cf6;
+            --cyan: #06b6d4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ─── Top Navigation ─── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 2rem;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.1rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .breadcrumb a {
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--text);
+        }
+
+        .breadcrumb .current {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .search-container input {
+            width: 320px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.55rem 1rem;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .search-container button {
+            background: var(--accent);
+            border: none;
+            border-radius: 10px;
+            padding: 0.55rem 1.2rem;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .search-container button:hover {
+            opacity: 0.85;
+        }
+
+        /* ─── Main Layout ─── */
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.25rem;
+        }
+
+        .page-header .subtitle {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .table-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.4rem 0.8rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+
+        .table-tag .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* ─── Column Selector ─── */
+        .column-selector-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .column-selector-area label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .custom-select-wrapper {
+            position: relative;
+            min-width: 280px;
+        }
+
+        .custom-select {
+            width: 100%;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.7rem 2.5rem 0.7rem 1rem;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            transition: border-color 0.2s;
+        }
+
+        .custom-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .custom-select-wrapper::after {
+            content: '▾';
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            pointer-events: none;
+            font-size: 0.9rem;
+        }
+
+        .column-count-badge {
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* ─── Summary Bar ─── */
+        .summary-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-chip {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+
+        .summary-chip .chip-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+        }
+
+        .summary-chip .chip-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        /* ─── Column Detail Dashboard ─── */
+        .column-dashboard {
+            display: none;
+        }
+
+        .status-banner {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 14px;
+            margin-bottom: 2rem;
+            border: 1px solid;
+        }
+
+        .status-banner.healthy {
+            background: var(--green-glow);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .status-banner.warning {
+            background: var(--amber-glow);
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+
+        .status-banner.critical {
+            background: var(--red-glow);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .status-banner.healthy .status-icon {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .status-banner.warning .status-icon {
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        .status-banner.critical .status-icon {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .status-text h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .status-text p {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .kpi-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+
+        .kpi-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+
+        .kpi-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        /* ─── Bottom Panels ─── */
+        .panels-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .panel-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ─── Health Ring ─── */
+        .ring-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .ring-svg {
+            width: 180px;
+            height: 180px;
+        }
+
+        .ring-bg {
+            fill: none;
+            stroke: var(--surface-2);
+            stroke-width: 14;
+        }
+
+        .ring-fill {
+            fill: none;
+            stroke-width: 14;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.5s ease-out;
+            transform: rotate(-90deg);
+            transform-origin: center;
+        }
+
+        .ring-center-value {
+            font-size: 2rem;
+            font-weight: 800;
+            fill: var(--text);
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+
+        .ring-center-label {
+            font-size: 0.65rem;
+            fill: var(--text-dim);
+            text-anchor: middle;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .ring-label {
+            text-align: center;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        /* ─── Metrics List ─── */
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-row .label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metric-row .value {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .metric-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ─── Loader / Error ─── */
+        .loader-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--surface-2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-msg {
+            color: var(--red);
+            background: var(--red-glow);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 1024px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .panels-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                padding: 0.75rem 1rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .dashboard {
+                padding: 1rem;
+            }
+
+            .search-container input {
+                width: 160px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="topbar">
+        <div class="topbar-left">
+            <span class="logo">DataObs</span>
+            <div class="nav-divider"></div>
+            <div class="breadcrumb">
+                <a href="/">Hub</a><span>›</span><span class="current">Quality</span>
+            </div>
+        </div>
+        <div class="search-container">
+            <input type="text" id="tablePath" placeholder="catalog.schema.table">
+            <button onclick="navigate()">Go</button>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+
+        <div id="loader" class="loader-area">
+            <div class="spinner"></div>
+        </div>
+
+        <div id="content" style="display: none;">
+
+            <div class="page-header">
+                <h1>Data Quality</h1>
+                <p class="subtitle">Column-level health metrics and null analysis</p>
+                <div class="table-tag">
+                    <span class="dot"></span>
+                    <span id="tableNameDisplay">—</span>
+                </div>
+            </div>
+
+            <!-- Summary Bar -->
+            <div class="summary-bar" id="summaryBar">
+                <div class="summary-chip">
+                    <div class="chip-label">Total Columns</div>
+                    <div class="chip-value" id="totalCols" style="color: var(--accent);">0</div>
+                </div>
+                <div class="summary-chip">
+                    <div class="chip-label">Healthy (&lt;5% nulls)</div>
+                    <div class="chip-value" id="healthyCols" style="color: var(--green);">0</div>
+                </div>
+                <div class="summary-chip">
+                    <div class="chip-label">At Risk (&gt;20% nulls)</div>
+                    <div class="chip-value" id="riskCols" style="color: var(--red);">0</div>
+                </div>
+            </div>
+
+            <!-- Column Selector -->
+            <div class="column-selector-area">
+                <label>Select Column</label>
+                <div class="custom-select-wrapper">
+                    <select class="custom-select" id="columnSelect" onchange="showColumnDetail()">
+                        <option value="">— Choose a column —</option>
+                    </select>
+                </div>
+                <span class="column-count-badge" id="colCountBadge">0 columns</span>
+            </div>
+
+            <!-- Column Detail Dashboard -->
+            <div class="column-dashboard" id="columnDashboard">
+
+                <div class="status-banner" id="healthBanner">
+                    <div class="status-icon" id="healthIcon">✓</div>
+                    <div class="status-text">
+                        <h3 id="healthTitle">Column is Healthy</h3>
+                        <p id="healthDesc">Null rate is within acceptable limits.</p>
+                    </div>
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Null %</span>
+                            <div class="kpi-icon" style="background: var(--red-glow); color: var(--red);">⚠</div>
+                        </div>
+                        <div class="kpi-value" id="kpiNullPct" style="color: var(--green);">0%</div>
+                        <div class="kpi-sub">percentage of null values</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Distinct Values</span>
+                            <div class="kpi-icon" style="background: var(--accent-glow); color: var(--accent);">🔢</div>
+                        </div>
+                        <div class="kpi-value" id="kpiDistinct" style="color: var(--accent);">0</div>
+                        <div class="kpi-sub">unique values in column</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Null Count</span>
+                            <div class="kpi-icon" style="background: var(--amber-glow); color: var(--amber);">📊</div>
+                        </div>
+                        <div class="kpi-value" id="kpiNullCount" style="color: var(--amber);">0</div>
+                        <div class="kpi-sub">total null entries</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Total Rows</span>
+                            <div class="kpi-icon" style="background: rgba(139, 92, 246, 0.15); color: var(--purple);">📋
+                            </div>
+                        </div>
+                        <div class="kpi-value" id="kpiTotalRows" style="color: var(--purple);">0</div>
+                        <div class="kpi-sub">rows in the table</div>
+                    </div>
+                </div>
+
+                <div class="panels-grid">
+
+                    <!-- Health Ring -->
+                    <div class="panel">
+                        <div class="panel-title">🛡️ Health Score</div>
+                        <div class="ring-wrapper">
+                            <svg class="ring-svg" viewBox="0 0 180 180">
+                                <circle class="ring-bg" cx="90" cy="90" r="72"></circle>
+                                <circle class="ring-fill" id="ringFill" cx="90" cy="90" r="72" stroke="var(--green)">
+                                </circle>
+                                <text class="ring-center-value" x="90" y="85" id="ringValue">100</text>
+                                <text class="ring-center-label" x="90" y="108" id="ringLabel">HEALTH</text>
+                            </svg>
+                            <div class="ring-label" id="ringDesc">Non-null percentage</div>
+                        </div>
+                    </div>
+
+                    <!-- All Metrics -->
+                    <div class="panel">
+                        <div class="panel-title">📋 Column Details</div>
+
+                        <div class="metric-row">
+                            <span class="label"><span class="metric-dot" style="background: var(--accent);"></span>
+                                Column Name</span>
+                            <span class="value" id="detColName">—</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="label"><span class="metric-dot" style="background: var(--purple);"></span> Data
+                                Type</span>
+                            <span class="value" id="detDataType">—</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="label"><span class="metric-dot" style="background: var(--amber);"></span> Zero
+                                Count</span>
+                            <span class="value" id="detZeroCount">—</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="label"><span class="metric-dot" style="background: var(--cyan);"></span>
+                                Fingerprint</span>
+                            <span class="value" id="detFingerprint"
+                                style="font-family: monospace; font-size: 0.8rem;">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="errorArea" class="error-msg" style="display: none;"></div>
+    </main>
+
+    <script>
+        const API_BASE = "https://poc-lineage-backend.vercel.app";
+        let allColumns = [];
+
+        function getTablePathFromURL() {
+            const prefix = "/stats/quality/";
+            const path = window.location.pathname;
+            if (path.startsWith(prefix) && path.length > prefix.length) {
+                return decodeURIComponent(path.substring(prefix.length));
+            }
+            return null;
+        }
+
+        function navigate() {
+            const path = document.getElementById('tablePath').value;
+            if (path) window.location.href = `/stats/quality/${path}`;
+        }
+
+        document.getElementById('tablePath').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') navigate();
+        });
+
+        async function fetchQuality(tablePath) {
+            const loader = document.getElementById('loader');
+            const content = document.getElementById('content');
+            const errorArea = document.getElementById('errorArea');
+
+            document.getElementById('tablePath').value = tablePath;
+
+            loader.style.display = 'flex';
+            content.style.display = 'none';
+            errorArea.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/stats/quality/${tablePath}`);
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.detail || `HTTP ${response.status}`);
+                }
+
+                allColumns = await response.json();
+                renderOverview(tablePath);
+
+                loader.style.display = 'none';
+                content.style.display = 'block';
+            } catch (err) {
+                loader.style.display = 'none';
+                errorArea.textContent = err.message;
+                errorArea.style.display = 'block';
+            }
+        }
+
+        function renderOverview(tablePath) {
+            document.getElementById('tableNameDisplay').textContent = tablePath;
+
+            // Summary
+            const healthy = allColumns.filter(c => (c.null_percentage || 0) < 5).length;
+            const atRisk = allColumns.filter(c => (c.null_percentage || 0) > 20).length;
+            document.getElementById('totalCols').textContent = allColumns.length;
+            document.getElementById('healthyCols').textContent = healthy;
+            document.getElementById('riskCols').textContent = atRisk;
+            document.getElementById('colCountBadge').textContent = `${allColumns.length} columns`;
+
+            // Populate dropdown
+            const select = document.getElementById('columnSelect');
+            select.innerHTML = '<option value="">— Choose a column —</option>';
+            allColumns.forEach((col, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                const nullPct = col.null_percentage != null ? col.null_percentage.toFixed(1) : '0.0';
+                const icon = parseFloat(nullPct) < 5 ? '🟢' : parseFloat(nullPct) > 20 ? '🔴' : '🟡';
+                opt.textContent = `${icon} ${col.column_name} (${nullPct}% null)`;
+                select.appendChild(opt);
+            });
+
+            // Auto-select first column
+            if (allColumns.length > 0) {
+                select.value = '0';
+                showColumnDetail();
+            }
+        }
+
+        function showColumnDetail() {
+            const idx = document.getElementById('columnSelect').value;
+            const dashboard = document.getElementById('columnDashboard');
+
+            if (idx === '') {
+                dashboard.style.display = 'none';
+                return;
+            }
+
+            const col = allColumns[parseInt(idx)];
+            dashboard.style.display = 'block';
+
+            const nullPct = col.null_percentage || 0;
+            const healthScore = (100 - nullPct).toFixed(1);
+
+            // KPIs
+            document.getElementById('kpiNullPct').textContent = nullPct.toFixed(2) + '%';
+            document.getElementById('kpiDistinct').textContent = (col.distinct_count || 0).toLocaleString();
+            document.getElementById('kpiNullCount').textContent = (col.null_count || 0).toLocaleString();
+            document.getElementById('kpiTotalRows').textContent = (col.total_rows || 0).toLocaleString();
+
+            // Null % color
+            const nullEl = document.getElementById('kpiNullPct');
+            nullEl.style.color = nullPct < 5 ? 'var(--green)' : nullPct < 20 ? 'var(--amber)' : 'var(--red)';
+
+            // Health banner
+            const banner = document.getElementById('healthBanner');
+            const icon = document.getElementById('healthIcon');
+            const title = document.getElementById('healthTitle');
+            const desc = document.getElementById('healthDesc');
+
+            banner.className = 'status-banner';
+            if (nullPct < 5) {
+                banner.classList.add('healthy');
+                icon.textContent = '✓';
+                title.textContent = `${col.column_name} is Healthy`;
+                desc.textContent = `Only ${nullPct.toFixed(2)}% null values — excellent data quality.`;
+            } else if (nullPct < 20) {
+                banner.classList.add('warning');
+                icon.textContent = '⚠';
+                title.textContent = `${col.column_name} Needs Attention`;
+                desc.textContent = `${nullPct.toFixed(2)}% null values — approaching quality threshold.`;
+            } else {
+                banner.classList.add('critical');
+                icon.textContent = '✕';
+                title.textContent = `${col.column_name} has Quality Issues`;
+                desc.textContent = `${nullPct.toFixed(2)}% null values — exceeds acceptable quality limits.`;
+            }
+
+            // Health Ring
+            const circumference = 2 * Math.PI * 72;
+            const ringFill = document.getElementById('ringFill');
+            const offset = circumference * (1 - parseFloat(healthScore) / 100);
+            ringFill.style.strokeDasharray = circumference;
+            ringFill.style.strokeDashoffset = offset;
+            ringFill.setAttribute('stroke', nullPct < 5 ? 'var(--green)' : nullPct < 20 ? 'var(--amber)' : 'var(--red)');
+            document.getElementById('ringValue').textContent = healthScore + '%';
+
+            // Details panel
+            document.getElementById('detColName').textContent = col.column_name;
+            document.getElementById('detDataType').textContent = col.data_type || '—';
+            document.getElementById('detZeroCount').textContent = (col.zero_count || 0).toLocaleString();
+            document.getElementById('detFingerprint').textContent = col.fingerprint || 'N/A';
+        }
+
+        // ── Auto-fetch on load ──
+        const tablePath = getTablePathFromURL();
+        if (tablePath) {
+            fetchQuality(tablePath);
+        } else {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

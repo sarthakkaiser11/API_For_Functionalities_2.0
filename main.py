@@ -38,7 +38,7 @@ class FreshnessResponse(BaseModel):
 class QualityColumn(BaseModel):
     """Quality metrics for a single column in a table."""
     column_name: str
-    data_format: str | None = None
+    data_type: str | None = None
     null_count: int | None = None
     null_percentage: float | None = None
     distinct_count: int | None = None
@@ -186,7 +186,7 @@ def get_quality(
     target_table = get_target_table("quality")
 
     query = f"""
-        SELECT column_name, data_format, null_count, null_percentage, distinct_count, zero_count, total_rows, fingerprint
+        SELECT column_name, data_type, null_count, null_percentage, distinct_count, zero_count, total_rows, fingerprint
         FROM {target_table}
         WHERE catalog_name = '{catalog}' AND schema_name = '{schema}' AND table_name = '{table}'
     """

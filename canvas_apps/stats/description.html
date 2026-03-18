@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Description Dashboard | Data Observability</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface-2: #1a1a26;
+            --surface-3: #22222e;
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.12);
+            --text: #ffffff;
+            --text-dim: #6b7280;
+            --text-muted: #4b5563;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --green: #10b981;
+            --green-glow: rgba(16, 185, 129, 0.15);
+            --amber: #f59e0b;
+            --amber-glow: rgba(245, 158, 11, 0.15);
+            --red: #ef4444;
+            --red-glow: rgba(239, 68, 68, 0.15);
+            --purple: #8b5cf6;
+            --cyan: #06b6d4;
+            --teal: #14b8a6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ─── Top Navigation ─── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 2rem;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.1rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .breadcrumb a {
+            color: var(--text-dim);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--text);
+        }
+
+        .breadcrumb .current {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .search-container input {
+            width: 320px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.55rem 1rem;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .search-container button {
+            background: var(--accent);
+            border: none;
+            border-radius: 10px;
+            padding: 0.55rem 1.2rem;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .search-container button:hover {
+            opacity: 0.85;
+        }
+
+        /* ─── Main Layout ─── */
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.25rem;
+        }
+
+        .page-header .subtitle {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .table-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.4rem 0.8rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+
+        .table-tag .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* ─── Summary Cards ─── */
+        .summary-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-chip {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+
+        .summary-chip .chip-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+        }
+
+        .summary-chip .chip-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        /* ─── Table Description Panel ─── */
+        .desc-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .desc-panel-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .desc-content {
+            color: var(--text-dim);
+            font-size: 0.88rem;
+            line-height: 1.7;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+            white-space: pre-wrap;
+        }
+
+        .desc-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .desc-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .desc-content::-webkit-scrollbar-thumb {
+            background: var(--surface-3);
+            border-radius: 2px;
+        }
+
+        .expand-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.75rem;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.35rem 0.75rem;
+            color: var(--accent);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .expand-btn:hover {
+            border-color: var(--accent);
+        }
+
+        /* ─── Column Selector ─── */
+        .column-selector-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .column-selector-area label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .custom-select-wrapper {
+            position: relative;
+            min-width: 320px;
+        }
+
+        .custom-select {
+            width: 100%;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.7rem 2.5rem 0.7rem 1rem;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .custom-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .custom-select-wrapper::after {
+            content: '▾';
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            pointer-events: none;
+        }
+
+        .column-count-badge {
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* ─── Column Detail ─── */
+        .column-dashboard {
+            display: none;
+        }
+
+        .col-header-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .col-name-tag {
+            font-size: 1.25rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .type-badge {
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--purple);
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .col-desc-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .col-desc-content {
+            color: var(--text-dim);
+            font-size: 0.88rem;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+
+        /* ─── Loader / Error ─── */
+        .loader-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--surface-2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-msg {
+            color: var(--red);
+            background: var(--red-glow);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        @media (max-width: 1024px) {
+            .summary-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .topbar {
+                padding: 0.75rem 1rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .dashboard {
+                padding: 1rem;
+            }
+
+            .search-container input {
+                width: 160px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="topbar">
+        <div class="topbar-left">
+            <span class="logo">DataObs</span>
+            <div class="nav-divider"></div>
+            <div class="breadcrumb">
+                <a href="/">Hub</a><span>›</span><span class="current">Description</span>
+            </div>
+        </div>
+        <div class="search-container">
+            <input type="text" id="tablePath" placeholder="catalog.schema.table">
+            <button onclick="navigate()">Go</button>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+
+        <div id="loader" class="loader-area">
+            <div class="spinner"></div>
+        </div>
+
+        <div id="content" style="display: none;">
+
+            <div class="page-header">
+                <h1>Data Description</h1>
+                <p class="subtitle">AI-generated documentation for your tables and columns</p>
+                <div class="table-tag">
+                    <span class="dot"></span>
+                    <span id="tableNameDisplay">—</span>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="summary-bar">
+                <div class="summary-chip">
+                    <div class="chip-label">Table</div>
+                    <div class="chip-value" id="tblName" style="color: var(--accent); font-size: 1.1rem;">—</div>
+                </div>
+                <div class="summary-chip">
+                    <div class="chip-label">Schema</div>
+                    <div class="chip-value" id="schemaName" style="color: var(--green); font-size: 1.1rem;">—</div>
+                </div>
+                <div class="summary-chip">
+                    <div class="chip-label">Columns</div>
+                    <div class="chip-value" id="colCount" style="color: var(--purple);">0</div>
+                </div>
+            </div>
+
+            <!-- Table Description -->
+            <div class="desc-panel">
+                <div class="desc-panel-title">📄 Table Description</div>
+                <div class="desc-content" id="tableDescription">—</div>
+                <button class="expand-btn" id="expandBtn" onclick="toggleExpand()">
+                    <span id="expandIcon">▼</span> Show more
+                </button>
+            </div>
+
+            <!-- Column Selector -->
+            <div class="column-selector-area">
+                <label>Select Column</label>
+                <div class="custom-select-wrapper">
+                    <select class="custom-select" id="columnSelect" onchange="showColumnDetail()">
+                        <option value="">— Choose a column —</option>
+                    </select>
+                </div>
+                <span class="column-count-badge" id="colCountBadge">0 columns</span>
+            </div>
+
+            <!-- Column Detail -->
+            <div class="column-dashboard" id="columnDashboard">
+                <div class="col-header-bar">
+                    <span class="col-name-tag" id="colNameTag">—</span>
+                    <span class="type-badge" id="colTypeBadge">—</span>
+                </div>
+                <div class="col-desc-panel">
+                    <div class="desc-panel-title">📋 Column Description</div>
+                    <div class="col-desc-content" id="colDescription">—</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="errorArea" class="error-msg" style="display: none;"></div>
+    </main>
+
+    <script>
+        let allColumns = [];
+        let expanded = false;
+
+        function getTablePathFromURL() {
+            const prefix = "/stats/description/";
+            const path = window.location.pathname;
+            if (path.startsWith(prefix) && path.length > prefix.length) {
+                return decodeURIComponent(path.substring(prefix.length));
+            }
+            return null;
+        }
+
+        function navigate() {
+            const path = document.getElementById('tablePath').value;
+            if (path) window.location.href = `/stats/description/${path}`;
+        }
+
+        document.getElementById('tablePath').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') navigate();
+        });
+
+        function toggleExpand() {
+            const el = document.getElementById('tableDescription');
+            const btn = document.getElementById('expandBtn');
+            const icon = document.getElementById('expandIcon');
+            expanded = !expanded;
+            if (expanded) {
+                el.style.maxHeight = 'none';
+                btn.innerHTML = '<span>▲</span> Show less';
+            } else {
+                el.style.maxHeight = '200px';
+                btn.innerHTML = '<span>▼</span> Show more';
+            }
+        }
+
+        async function fetchDescription(tablePath) {
+            const loader = document.getElementById('loader');
+            const content = document.getElementById('content');
+            const errorArea = document.getElementById('errorArea');
+
+            document.getElementById('tablePath').value = tablePath;
+
+            loader.style.display = 'flex';
+            content.style.display = 'none';
+            errorArea.style.display = 'none';
+
+            try {
+                // Load the JSON data file
+                const response = await fetch('/stats/descriptions.json');
+                if (!response.ok) throw new Error('Could not load descriptions data file.');
+
+                const data = await response.json();
+
+                // Parse catalog.schema.table from the path
+                const parts = tablePath.split('.');
+                if (parts.length !== 3) throw new Error('Invalid format. Use catalog.schema.table');
+
+                const [catalog, schema, table] = parts;
+
+                // Find matching entry
+                const entry = data.find(
+                    d => d.catalog === catalog && d.schema === schema && d.table.table_name === table
+                );
+
+                if (!entry) throw new Error(`Table "${tablePath}" not found in the documentation.`);
+
+                renderDashboard(entry, tablePath);
+
+                loader.style.display = 'none';
+                content.style.display = 'block';
+            } catch (err) {
+                loader.style.display = 'none';
+                errorArea.textContent = err.message;
+                errorArea.style.display = 'block';
+            }
+        }
+
+        function renderDashboard(entry, tablePath) {
+            document.getElementById('tableNameDisplay').textContent = tablePath;
+            document.getElementById('tblName').textContent = entry.table.table_name;
+            document.getElementById('schemaName').textContent = `${entry.catalog}.${entry.schema}`;
+            document.getElementById('colCount').textContent = entry.table.columns.length;
+            document.getElementById('colCountBadge').textContent = `${entry.table.columns.length} columns`;
+
+            // Table description
+            document.getElementById('tableDescription').textContent = entry.table.table_description || 'No description available.';
+
+            // Reset expand
+            expanded = false;
+            document.getElementById('tableDescription').style.maxHeight = '200px';
+            document.getElementById('expandBtn').innerHTML = '<span>▼</span> Show more';
+
+            // Populate column dropdown
+            allColumns = entry.table.columns;
+            const select = document.getElementById('columnSelect');
+            select.innerHTML = '<option value="">— Choose a column —</option>';
+
+            const typeColors = {
+                'STRING': '📝', 'DOUBLE': '🔢', 'LONG': '🔢', 'DATE': '📅',
+                'TIMESTAMP': '🕐', 'INT': '🔢', 'BIGINT': '🔢', 'BOOLEAN': '🔘'
+            };
+
+            allColumns.forEach((col, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                const icon = typeColors[col.data_type] || '📄';
+                opt.textContent = `${icon} ${col.column_name} (${col.data_type})`;
+                select.appendChild(opt);
+            });
+
+            // Auto-select first column
+            if (allColumns.length > 0) {
+                select.value = '0';
+                showColumnDetail();
+            }
+        }
+
+        function showColumnDetail() {
+            const idx = document.getElementById('columnSelect').value;
+            const dashboard = document.getElementById('columnDashboard');
+
+            if (idx === '') {
+                dashboard.style.display = 'none';
+                return;
+            }
+
+            const col = allColumns[parseInt(idx)];
+            dashboard.style.display = 'block';
+
+            document.getElementById('colNameTag').textContent = col.column_name;
+            document.getElementById('colTypeBadge').textContent = col.data_type;
+            document.getElementById('colDescription').textContent = col.description || 'No description available.';
+        }
+
+        // ── Auto-fetch on load ──
+        const tablePath = getTablePathFromURL();
+        if (tablePath) {
+            fetchDescription(tablePath);
+        } else {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

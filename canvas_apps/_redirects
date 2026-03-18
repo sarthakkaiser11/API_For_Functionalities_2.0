@@ -1,0 +1,4 @@
+/stats/freshness/*     /stats/freshness.html     200
+/stats/quality/*       /stats/quality.html       200
+/stats/profile/*       /stats/profile.html       200
+/stats/description/*   /stats/description.html   200

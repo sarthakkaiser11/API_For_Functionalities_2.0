@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Observability Hub</title>
+    <link rel="stylesheet" href="shared/design-system.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .hub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2.5rem;
+        }
+
+        .hub-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .hub-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 12px 40px rgba(0, 210, 255, 0.15);
+        }
+
+        .hub-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hub-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .usage {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+        }
+
+        .usage h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--accent-primary);
+        }
+
+        .usage code {
+            background: rgba(0, 210, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+        }
+
+        .usage li {
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="glass-card">
+            <header>
+                <h1>Data Observability Hub</h1>
+                <p style="color: var(--text-secondary); font-size: 1.1rem;">
+                    Monitor freshness, quality, and statistical profiles of your Databricks tables.
+                </p>
+            </header>
+
+            <div class="hub-grid">
+                <a class="hub-card" href="/stats/freshness/intelliegencedatacatalog.sample.raw_pharma_sales">
+                    <div class="icon">⏱️</div>
+                    <h2>Freshness</h2>
+                    <p>Track data latency, versioning, and modification timestamps. Know exactly how fresh your data is.
+                    </p>
+                </a>
+
+                <a class="hub-card" href="/stats/quality/intelliegencedatacatalog.sample.raw_pharma_sales">
+                    <div class="icon">🛡️</div>
+                    <h2>Quality</h2>
+                    <p>Deep-dive into column-level health metrics — null percentages, distinct counts, and data
+                        fingerprints.</p>
+                </a>
+
+                <a class="hub-card" href="/stats/profile/intelliegencedatacatalog.sample.raw_pharma_sales">
+                    <div class="icon">📊</div>
+                    <h2>Profile</h2>
+                    <p>Explore statistical distributions — mean, median, quantiles, and row counts for numeric features.
+                    </p>
+                </a>
+
+                <a class="hub-card" href="/stats/description/intelliegencedatacatalog.pharma_sales.raw_pharma_sales">
+                    <div class="icon">📄</div>
+                    <h2>Description</h2>
+                    <p>AI-generated documentation — table overviews, column definitions, and business context.
+                    </p>
+                </a>
+            </div>
+
+            <div class="usage">
+                <h3>📌 Usage</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li>Freshness → <code>/stats/freshness/{catalog}.{schema}.{table}</code></li>
+                    <li>Quality → <code>/stats/quality/{catalog}.{schema}.{table}</code></li>
+                    <li>Profile → <code>/stats/profile/{catalog}.{schema}.{table}</code></li>
+                    <li>Description → <code>/stats/description/{catalog}.{schema}.{table}</code></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
