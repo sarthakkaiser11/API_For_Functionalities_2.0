@@ -584,7 +584,7 @@
 
             try {
                 // Load the JSON data file
-                const response = await fetch('/stats/descriptions.json');
+                const response = await fetch('/stats/documentation.json');
                 if (!response.ok) throw new Error('Could not load descriptions data file.');
 
                 const data = await response.json();
