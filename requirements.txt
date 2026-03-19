@@ -1,4 +1,4 @@
 fastapi
 uvicorn
-databricks-sql-python
+databricks-sql-connector
 python-dotenv
